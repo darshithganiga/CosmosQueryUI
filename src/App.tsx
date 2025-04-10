@@ -6,7 +6,7 @@ function App() {
   return (
     <>
       <div className="p-4">
-        <h2 className="mb-4">Cosmos DB Query UI</h2>
+        <h2 className="mb-4">CosmoBridge</h2>
         <CosmosQueryUI />
       </div>
     </>
