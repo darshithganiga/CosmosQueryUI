@@ -146,7 +146,6 @@ const CosmosQueryUI: React.FC = () => {
                 onChange={(e) => dispatch(setCompanyId(e.target.value))}
                 placeholder="Enter Company ID"
                 className="shadow-sm"
-                disabled={!table}
               />
             </Form.Group>
 
@@ -158,7 +157,6 @@ const CosmosQueryUI: React.FC = () => {
                 onChange={(e) => dispatch(setUserId(e.target.value))}
                 placeholder="Enter User ID"
                 className="shadow-sm"
-                disabled={!table}
               />
             </Form.Group>
 
@@ -172,7 +170,6 @@ const CosmosQueryUI: React.FC = () => {
                 onChange={(e) => dispatch(setRecordPrimaryKey(e.target.value))}
                 placeholder="Enter Record Primary Key"
                 className="shadow-sm"
-                disabled={!table}
               />
             </Form.Group>
 
@@ -184,7 +181,6 @@ const CosmosQueryUI: React.FC = () => {
                 onChange={(e) => dispatch(setOperation(e.target.value))}
                 placeholder="Enter Operation Type"
                 className="shadow-sm"
-                disabled={!table}
               />
             </Form.Group>
 
@@ -193,7 +189,7 @@ const CosmosQueryUI: React.FC = () => {
                 variant="primary"
                 size="lg"
                 onClick={handleFetch}
-                disabled={!container || !table || loading || hasFetched}
+                disabled={!container || loading || hasFetched}
                 className="fw-semibold"
               >
                 {loading ? (
