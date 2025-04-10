@@ -9,6 +9,14 @@ import {
   setMessage,
   setLoading,
 } from "../State/Slices/ContainerSlice";
+
+import {
+  setCompanyId,
+  setUserId,
+  setRecordPrimaryKey,
+  setOperation,
+} from "../State/Slices/Filterslice";
+
 import {
   Container,
   Row,
@@ -29,9 +37,17 @@ const containerTableMap: Record<string, string[]> = {
 
 const CosmosQueryUI: React.FC = () => {
   const dispatch = useDispatch();
+
+  // Selector state from ContainerSlice
   const { container, table, message, loading } = useSelector(
     (state: RootState) => state.selector
   );
+
+  // Filter state from Filterslice
+  const { companyId, userId, recordPrimaryKey, operation } = useSelector(
+    (state: RootState) => state.filter
+  );
+
   const [hasFetched, setHasFetched] = useState(false);
   const [messageType, setMessageType] = useState<"success" | "danger">(
     "success"
@@ -45,16 +61,18 @@ const CosmosQueryUI: React.FC = () => {
       const response = await axios.post("/api/CosmosToSql/transfer", {
         containerName: container,
         tableName: table,
+        companyId,
+        userId,
+        recordPrimaryKey,
+        operation,
       });
 
-      dispatch(setMessage("✅ Data transfer successful"));
+      dispatch(setMessage(" Data transfer successful"));
       setMessageType("success");
       setHasFetched(true);
     } catch (error: any) {
       dispatch(
-        setMessage(
-          `❌ Transfer failed: ${error.response?.data || error.message}`
-        )
+        setMessage(` Transfer failed: ${error.response?.data || error.message}`)
       );
       setMessageType("danger");
     } finally {
@@ -63,14 +81,13 @@ const CosmosQueryUI: React.FC = () => {
   };
 
   useEffect(() => {
-    // Reset fetch state when container/table changes
     setHasFetched(false);
   }, [container, table]);
 
   return (
     <Container className="py-5 d-flex justify-content-center">
       <Card
-        style={{ width: "100%", maxWidth: "650px" }}
+        style={{ width: "100%", maxWidth: "700px" }}
         className="shadow-lg p-4"
       >
         <Card.Body>
@@ -99,6 +116,7 @@ const CosmosQueryUI: React.FC = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
+
               <Col md={6}>
                 <Form.Group>
                   <Form.Label className="fw-semibold">Select Table</Form.Label>
@@ -119,6 +137,56 @@ const CosmosQueryUI: React.FC = () => {
                 </Form.Group>
               </Col>
             </Row>
+
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-semibold">Company ID</Form.Label>
+              <Form.Control
+                type="text"
+                value={companyId}
+                onChange={(e) => dispatch(setCompanyId(e.target.value))}
+                placeholder="Enter Company ID"
+                className="shadow-sm"
+                disabled={!table}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-semibold">User ID</Form.Label>
+              <Form.Control
+                type="text"
+                value={userId}
+                onChange={(e) => dispatch(setUserId(e.target.value))}
+                placeholder="Enter User ID"
+                className="shadow-sm"
+                disabled={!table}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-semibold">
+                Record Primary Key
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={recordPrimaryKey}
+                onChange={(e) => dispatch(setRecordPrimaryKey(e.target.value))}
+                placeholder="Enter Record Primary Key"
+                className="shadow-sm"
+                disabled={!table}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-4">
+              <Form.Label className="fw-semibold">Operation</Form.Label>
+              <Form.Control
+                type="text"
+                value={operation}
+                onChange={(e) => dispatch(setOperation(e.target.value))}
+                placeholder="Enter Operation Type"
+                className="shadow-sm"
+                disabled={!table}
+              />
+            </Form.Group>
 
             <div className="d-grid gap-2">
               <Button

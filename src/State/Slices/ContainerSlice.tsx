@@ -37,4 +37,5 @@ const selectorSlice = createSlice({
 
 export const { setContainer, setTable, setMessage, setLoading } =
   selectorSlice.actions;
+
 export default selectorSlice.reducer;
