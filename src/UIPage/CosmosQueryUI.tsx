@@ -31,10 +31,35 @@ import {
 } from "react-bootstrap";
 
 const containerTableMap: Record<string, string[]> = {
-  Exchange: ["File", "CompanySettings", "UserSettings"],
-  Organizer: ["BatchInfo", "Client", "ProcessInfo", "UploadedDocument"],
-  Sherlock: ["CompanySettings"],
-  Suite: ["UserSettings", "Users"],
+  Exchange: [
+    "[DR].[File]",
+    "[exchange].[CompanySettings]",
+    "[exchange].[UserSettings]",
+  ],
+  Organizer: [
+    "[organizer].[BatchInfo]",
+    "[organizer].[Client]",
+    "[organizer].[ProcessInfo]",
+    "[organizer].[UploadedDocument]",
+  ],
+  Sherlock: ["[dbo].[CompanySettings]"],
+  Suite: ["[dbo].[UserSettings]", "[dbo].[Users]"],
+  Returns: [
+    "Partnership",
+    "Spouse",
+    "Taxpayer",
+    "[dbo].[CompanySettings]",
+    "[dbo].[DocumentFacade]",
+    "[dbo].[DocumentFormGroup]",
+    "[dbo].[DocumentInfo]",
+    "[dbo].[K1ShareHolderDetails]",
+    "[dbo].[K1Shareholder]",
+    "[dbo].[SSRSettings]",
+    "[dbo].[SigningOrder]",
+    "[dbo].[SigningReminders]",
+    "[dbo].[TaxClient]",
+    "[dbo].[UserSettings]",
+  ],
 };
 
 const CosmosQueryUI: React.FC = () => {
@@ -56,7 +81,7 @@ const CosmosQueryUI: React.FC = () => {
     dispatch(setMessage(""));
 
     try {
-      await axios.post("/api/CosmosToSql/transfer", {
+      await axios.post("https://localhost:7127/api/CosmosToSql/transfer", {
         containerName: container,
         tableName: table,
         companyId,
