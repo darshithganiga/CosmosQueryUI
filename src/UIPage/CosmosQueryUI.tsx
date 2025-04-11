@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../Store";
 import axios from "axios";
@@ -56,7 +56,7 @@ const CosmosQueryUI: React.FC = () => {
     dispatch(setMessage(""));
 
     try {
-      const response = await axios.post("/api/CosmosToSql/transfer", {
+      await axios.post("/api/CosmosToSql/transfer", {
         containerName: container,
         tableName: table,
         companyId,
