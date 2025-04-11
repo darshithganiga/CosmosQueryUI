@@ -2,11 +2,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import selectorReducer from "./State/Slices/ContainerSlice";
 import filterreducer from "./State/Slices/Filterslice";
+import messagereducer from "./State/Slices/MessageSlice";
 
 const store = configureStore({
   reducer: {
     selector: selectorReducer,
     filter: filterreducer,
+    message: messagereducer,
   },
 });
 

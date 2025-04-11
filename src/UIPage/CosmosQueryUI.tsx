@@ -17,6 +17,8 @@ import {
   setOperation,
 } from "../State/Slices/Filterslice";
 
+import { setMessageType, setHasFetched } from "../State/Slices/MessageSlice";
+
 import {
   Container,
   Row,
@@ -38,19 +40,15 @@ const containerTableMap: Record<string, string[]> = {
 const CosmosQueryUI: React.FC = () => {
   const dispatch = useDispatch();
 
-  // Selector state from ContainerSlice
   const { container, table, message, loading } = useSelector(
     (state: RootState) => state.selector
   );
 
-  // Filter state from Filterslice
   const { companyId, userId, recordPrimaryKey, operation } = useSelector(
     (state: RootState) => state.filter
   );
-
-  const [hasFetched, setHasFetched] = useState(false);
-  const [messageType, setMessageType] = useState<"success" | "danger">(
-    "success"
+  const { messageType, hasFetched } = useSelector(
+    (state: RootState) => state.message // adjust if your slice is named differently
   );
 
   const handleFetch = async () => {
@@ -68,20 +66,20 @@ const CosmosQueryUI: React.FC = () => {
       });
 
       dispatch(setMessage(" Data transfer successful"));
-      setMessageType("success");
-      setHasFetched(true);
+      dispatch(setMessageType("success"));
+      dispatch(setHasFetched(true));
     } catch (error: any) {
       dispatch(
         setMessage(` Transfer failed: ${error.response?.data || error.message}`)
       );
-      setMessageType("danger");
+      dispatch(setMessageType("danger"));
     } finally {
       dispatch(setLoading(false));
     }
   };
 
   useEffect(() => {
-    setHasFetched(false);
+    dispatch(setHasFetched(false));
   }, [container, table]);
 
   return (
