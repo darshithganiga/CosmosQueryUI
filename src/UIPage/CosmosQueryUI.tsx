@@ -6,7 +6,10 @@ import {
   setQuery,
   setKey,
   setDatabaseId,
+  setContainerName,
   setSqlConnectionString,
+  setSqlDatabaseName,
+  setSqltableName,
 } from "../State/Slices/ConnectionSlice";
 import { RootState } from "../Store";
 
@@ -16,9 +19,15 @@ const ConnectionPage: React.FC = () => {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { query, key, databaseId, sqlConnectionString } = useSelector(
-    (state: RootState) => state.connection
-  );
+  const {
+    query,
+    key,
+    databaseId,
+    sqlConnectionString,
+    sqltableName,
+    containername,
+    sqldatabasename,
+  } = useSelector((state: RootState) => state.connection);
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -32,7 +41,10 @@ const ConnectionPage: React.FC = () => {
           query,
           key,
           databaseId,
+          containername,
           sqlConnectionString,
+          sqldatabasename,
+          sqltableName,
         }
       );
 
@@ -49,6 +61,15 @@ const ConnectionPage: React.FC = () => {
     padding: "0.75rem",
   };
 
+  const isFormValid =
+    key.trim() &&
+    databaseId.trim() &&
+    containername.trim() &&
+    sqlConnectionString.trim() &&
+    sqldatabasename.trim() &&
+    sqltableName.trim() &&
+    query.trim();
+
   return (
     <Container className="py-5 d-flex justify-content-center">
       <Card
@@ -57,7 +78,7 @@ const ConnectionPage: React.FC = () => {
       >
         <Card.Body>
           <Card.Title className="mb-4 text-center text-primary fw-bold fs-4">
-            Cosmos DB & SQL Connection
+            CosmosDB Data transfer Toolkit
           </Card.Title>
 
           <Form>
@@ -85,6 +106,19 @@ const ConnectionPage: React.FC = () => {
 
             <Form.Group className="mb-3">
               <Form.Label className="fw-semibold">
+                Cosmos Container Name
+              </Form.Label>
+              <Form.Control
+                type="text"
+                style={inputStyle}
+                placeholder="Enter Cosmos DB Container Name"
+                value={containername}
+                onChange={(e) => dispatch(setContainerName(e.target.value))}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-semibold">
                 MS SQL Connection String
               </Form.Label>
               <Form.Control
@@ -97,13 +131,34 @@ const ConnectionPage: React.FC = () => {
                 }
               />
             </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-semibold">Sql Database Name</Form.Label>
+              <Form.Control
+                type="text"
+                style={inputStyle}
+                placeholder="Enter Sql Database name"
+                value={sqldatabasename}
+                onChange={(e) => dispatch(setSqlDatabaseName(e.target.value))}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-semibold">SQL table Name</Form.Label>
+              <Form.Control
+                type="text"
+                style={inputStyle}
+                placeholder="Enter destination Sql Table"
+                value={sqltableName}
+                onChange={(e) => dispatch(setSqltableName(e.target.value))}
+              />
+            </Form.Group>
 
             <Form.Group className="mb-4">
               <Form.Label className="fw-semibold">Cosmos Query</Form.Label>
               <Form.Control
                 type="text"
                 style={inputStyle}
-                placeholder='Example: SELECT * FROM c WHERE c.userId = "123"'
+                placeholder='Ex: SELECT * FROM c WHERE c.userId = "123"'
                 value={query}
                 onChange={(e) => dispatch(setQuery(e.target.value))}
               />
@@ -125,7 +180,7 @@ const ConnectionPage: React.FC = () => {
               <Button
                 variant="primary"
                 onClick={handleSubmit}
-                disabled={loading}
+                disabled={loading || !isFormValid}
                 size="lg"
                 className="fw-semibold"
               >
