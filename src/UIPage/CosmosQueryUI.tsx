@@ -1,239 +1,144 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
+import { Container, Form, Button, Card, Alert, Spinner } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../Store";
 import axios from "axios";
-
 import {
-  setContainer,
-  setTable,
-  setMessage,
-  setLoading,
-} from "../State/Slices/ContainerSlice";
+  setQuery,
+  setKey,
+  setDatabaseId,
+  setSqlConnectionString,
+} from "../State/Slices/ConnectionSlice";
+import { RootState } from "../Store";
 
-import {
-  setCompanyId,
-  setUserId,
-  setRecordPrimaryKey,
-  setOperation,
-} from "../State/Slices/Filterslice";
-
-import { setMessageType, setHasFetched } from "../State/Slices/MessageSlice";
-
-import {
-  Container,
-  Row,
-  Col,
-  Form,
-  Button,
-  Spinner,
-  Alert,
-  Card,
-} from "react-bootstrap";
-
-const containerTableMap: Record<string, string[]> = {
-  Exchange: [
-    "[DR].[File]",
-    "[exchange].[CompanySettings]",
-    "[exchange].[UserSettings]",
-  ],
-  Organizer: [
-    "[organizer].[BatchInfo]",
-    "[organizer].[Client]",
-    "[organizer].[ProcessInfo]",
-    "[organizer].[UploadedDocument]",
-  ],
-  Sherlock: ["[dbo].[CompanySettings]"],
-  Suite: ["[dbo].[UserSettings]", "[dbo].[Users]"],
-  Returns: [
-    "Partnership",
-    "Spouse",
-    "Taxpayer",
-    "[dbo].[CompanySettings]",
-    "[dbo].[DocumentFacade]",
-    "[dbo].[DocumentFormGroup]",
-    "[dbo].[DocumentInfo]",
-    "[dbo].[K1ShareHolderDetails]",
-    "[dbo].[K1Shareholder]",
-    "[dbo].[SSRSettings]",
-    "[dbo].[SigningOrder]",
-    "[dbo].[SigningReminders]",
-    "[dbo].[TaxClient]",
-    "[dbo].[UserSettings]",
-  ],
-};
-
-const CosmosQueryUI: React.FC = () => {
+const ConnectionPage: React.FC = () => {
   const dispatch = useDispatch();
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const { container, table, message, loading } = useSelector(
-    (state: RootState) => state.selector
+  const { query, key, databaseId, sqlConnectionString } = useSelector(
+    (state: RootState) => state.connection
   );
 
-  const { companyId, userId, recordPrimaryKey, operation } = useSelector(
-    (state: RootState) => state.filter
-  );
-  const { messageType, hasFetched } = useSelector(
-    (state: RootState) => state.message // adjust if your slice is named differently
-  );
-
-  const handleFetch = async () => {
-    dispatch(setLoading(true));
-    dispatch(setMessage(""));
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
     try {
-      await axios.post("https://localhost:7127/api/CosmosToSql/transfer", {
-        containerName: container,
-        tableName: table,
-        companyId,
-        userId,
-        recordPrimaryKey,
-        operation,
-      });
-
-      dispatch(setMessage(" Data transfer successful"));
-      dispatch(setMessageType("success"));
-      dispatch(setHasFetched(true));
-    } catch (error: any) {
-      dispatch(
-        setMessage(` Transfer failed: ${error.response?.data || error.message}`)
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/CosmosToSql/transfer`,
+        {
+          query,
+          key,
+          databaseId,
+          sqlConnectionString,
+        }
       );
-      dispatch(setMessageType("danger"));
+
+      setSuccess("Data transfer successful!");
+    } catch (err: any) {
+      setError(`Error: ${err.response?.data || err.message}`);
     } finally {
-      dispatch(setLoading(false));
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    dispatch(setHasFetched(false));
-  }, [container, table]);
+  const inputStyle = {
+    fontSize: "1rem",
+    padding: "0.75rem",
+  };
 
   return (
     <Container className="py-5 d-flex justify-content-center">
       <Card
-        style={{ width: "100%", maxWidth: "700px" }}
+        style={{ width: "100%", maxWidth: "800px" }}
         className="shadow-lg p-4"
       >
         <Card.Body>
-          <Card.Title className="mb-4 text-center">
-            <h3 className="fw-bold text-primary">Cosmos DB Data Transfer</h3>
+          <Card.Title className="mb-4 text-center text-primary fw-bold fs-4">
+            Cosmos DB & SQL Connection
           </Card.Title>
 
           <Form>
-            <Row className="mb-4">
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label className="fw-semibold">
-                    Select Container
-                  </Form.Label>
-                  <Form.Select
-                    value={container}
-                    onChange={(e) => dispatch(setContainer(e.target.value))}
-                    className="shadow-sm"
-                  >
-                    <option value="">-- Choose Container --</option>
-                    {Object.keys(containerTableMap).map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label className="fw-semibold">Select Table</Form.Label>
-                  <Form.Select
-                    value={table}
-                    onChange={(e) => dispatch(setTable(e.target.value))}
-                    disabled={!container}
-                    className="shadow-sm"
-                  >
-                    <option value="">-- Choose Table --</option>
-                    {container &&
-                      containerTableMap[container].map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-            </Row>
-
             <Form.Group className="mb-3">
-              <Form.Label className="fw-semibold">Company ID</Form.Label>
+              <Form.Label className="fw-semibold">Cosmos DB Key</Form.Label>
               <Form.Control
                 type="text"
-                value={companyId}
-                onChange={(e) => dispatch(setCompanyId(e.target.value))}
-                placeholder="Enter Company ID"
-                className="shadow-sm"
+                style={inputStyle}
+                placeholder="Enter Cosmos DB Read-Only Key"
+                value={key}
+                onChange={(e) => dispatch(setKey(e.target.value))}
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label className="fw-semibold">User ID</Form.Label>
+              <Form.Label className="fw-semibold">Database ID</Form.Label>
               <Form.Control
                 type="text"
-                value={userId}
-                onChange={(e) => dispatch(setUserId(e.target.value))}
-                placeholder="Enter User ID"
-                className="shadow-sm"
+                style={inputStyle}
+                placeholder="Enter Cosmos DB Database ID"
+                value={databaseId}
+                onChange={(e) => dispatch(setDatabaseId(e.target.value))}
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label className="fw-semibold">
-                Record Primary Key
+                MS SQL Connection String
               </Form.Label>
               <Form.Control
                 type="text"
-                value={recordPrimaryKey}
-                onChange={(e) => dispatch(setRecordPrimaryKey(e.target.value))}
-                placeholder="Enter Record Primary Key"
-                className="shadow-sm"
+                style={inputStyle}
+                placeholder="Enter SQL Server Connection String"
+                value={sqlConnectionString}
+                onChange={(e) =>
+                  dispatch(setSqlConnectionString(e.target.value))
+                }
               />
             </Form.Group>
 
             <Form.Group className="mb-4">
-              <Form.Label className="fw-semibold">Operation</Form.Label>
+              <Form.Label className="fw-semibold">Cosmos Query</Form.Label>
               <Form.Control
                 type="text"
-                value={operation}
-                onChange={(e) => dispatch(setOperation(e.target.value))}
-                placeholder="Enter Operation Type"
-                className="shadow-sm"
+                style={inputStyle}
+                placeholder='Example: SELECT * FROM c WHERE c.userId = "123"'
+                value={query}
+                onChange={(e) => dispatch(setQuery(e.target.value))}
               />
             </Form.Group>
 
-            <div className="d-grid gap-2">
+            {error && (
+              <Alert variant="danger" className="text-center fw-semibold">
+                {error}
+              </Alert>
+            )}
+
+            {success && (
+              <Alert variant="success" className="text-center fw-semibold">
+                {success}
+              </Alert>
+            )}
+
+            <div className="d-grid">
               <Button
                 variant="primary"
+                onClick={handleSubmit}
+                disabled={loading}
                 size="lg"
-                onClick={handleFetch}
-                disabled={!container || loading || hasFetched}
                 className="fw-semibold"
               >
                 {loading ? (
                   <>
                     <Spinner animation="border" size="sm" className="me-2" />
-                    Fetching...
+                    Transferring...
                   </>
                 ) : (
-                  "Fetch Data"
+                  "Transfer Data"
                 )}
               </Button>
             </div>
-
-            {message && (
-              <Alert
-                variant={messageType}
-                className="mt-4 text-center fw-semibold"
-              >
-                {message}
-              </Alert>
-            )}
           </Form>
         </Card.Body>
       </Card>
@@ -241,4 +146,4 @@ const CosmosQueryUI: React.FC = () => {
   );
 };
 
-export default CosmosQueryUI;
+export default ConnectionPage;
